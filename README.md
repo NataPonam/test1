@@ -1,98 +1,119 @@
-# door_struct.h
-#ifndef DOOR_STRUCT.H
-#define DOOR_STRUCT.H
-
-struct door
-{
-  int id;
-  int status;
-};
-#endif
-# dmanager_module.c
-#include "door_struct.h"
+# MAIN
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#define DOORS_COUNT 15
-#define MAX_ID_SEED 10000
-
-
-void initialize_doors(struct door *doors);
-void sort_doors(struct door *doors, int ar_size);
-void close_doors(struct door *doors, int ar_size);
-void output_doors(struct door *doors, int ar_size);
-
-int main()
+#include <string.h>
+void print_file(const char *file_path)
 {
-  struct door doors[DOORS_COUNT];
-
-  initialize_doors(doors);
-  sort_doors(doors, DOORS_COUNT);
-  close_doors(doors, DOORS_COUNT);
-  output_doors(doors, DOORS_COUNT);
-}
-
-// Doors initialization function
-// ATTENTION!!!
-// DO NOT CHANGE!
-void initialize_doors(struct door *doors)
-{
-  srand(time(0));
-
-  int seed = rand() % MAX_ID_SEED;
-  for (int i = 0; i < DOORS_COUNT; i++)
+  FILE *fp = fopen(file_path, "r");
+  if (fp == NULL)
   {
-    doors[i].id = (i + seed) % DOORS_COUNT;
-    doors[i].status = rand() % 2;
+    printf("n/a\n");
+    return;
   }
-}
-void sort_doors(struct door *doors, int ar_size)
-{
-  for (int i = 0; i < ar_size - 1; i++)
+  fseek(fp, 0, SEEK_END); // pointer  to the end
+  long pos = ftell(fp);   // check position
+  if (pos == 0)
   {
-    int min = i;
-    for (int j = i + 1; j < ar_size; j++)
+    printf("n/a\n");
+    fclose(fp);
+    return;
+  };
+  rewind(fp); // pointer to start
+
+  char arr[256];
+  int ch;
+  int i = 0;
+  while ((ch = fgetc(fp)) != EOF && i < 255)
+    arr[i++] = ch;
+  arr[i] = '\0';
+  printf("%s\n", arr);
+  fclose(fp);
+}
+
+int main(void)
+{
+
+  int input_n;
+  char file_path[256];
+  while (1)
+  {
+    printf("Enter \"1\" for file_path and \"-1\" for exit");
+    if (scanf("%d", &input_n) != 1)
     {
-      if (doors[j].id < doors[min].id)
-      {
-        min = j;
-      }
-        }
-    if (min != i)
-    {
-      struct door temp = doors[i];
-      doors[i] = doors[min];
-      doors[min] = temp;
+      printf("n/a\n");
+      while (getchar() != '\n')
+        ;
+      continue;
     }
-  }
-}
-void close_doors(struct door *doors, int ar_size)
-{
-  for (int i = 0; i < ar_size; i++)
-  {
-    doors[i].status = 0;
-  }
-}
-void output_doors(struct door *doors, int ar_size)
-{
-  for (int i = 0; i < ar_size; i++)
-  {
-    printf("%d, %d\n", doors[i].id, doors[i].status);
-  }
+    switch (input_n)
+    {
+    case 1:
+      printf("Enter file_path");
+      if (scanf("%255s", &file_path) != 1)
+      {
+        printf("n/a\n");
+        while (getchar() != '\n')
+          ;
+        break;
+      }
+      print_file(file_path);
+      break;
+
+    case -1:
+      return 0;
+
+    default:
+      printf("n/a\n");
+      break;
+    }
+  };
+
+  return 0;
 }
 # Makefile
-# Цель по умолчанию - собираем Quest 1
-all: door_struct
+makefile
+# Простой Makefile для проекта cipher
 
-# Стадия door_struct для Quest 1
-door_struct:
-	gcc -Wall -Wextra -Werror -std=c11 -c src/dmanager_module.c -o src/dmanager_module.o
-	mkdir -p build
-	gcc src/dmanager_module.o -o build/Quest_1
+# Компилятор
+CC = gcc
 
-# Очистка
+# Флаги компиляции
+CFLAGS = -Wall -Wextra -Werror -std=c11
+
+# Имя исполняемого файла
+TARGET = cipher
+
+# Папка с исходным кодом
+SRC_DIR = src
+
+# Папка для сборки
+BUILD_DIR = build
+
+# Исходный файл
+SRC_FILE = $(SRC_DIR)/cipher.c
+
+# Полный путь к исполняемому файлу
+OUTPUT = $(BUILD_DIR)/$(TARGET)
+
+# Основная цель - сборка проекта
+all: cipher
+
+# Цель для сборки программы
+cipher: $(BUILD_DIR) $(OUTPUT)
+
+# Создание папки build если её нет
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+# Компиляция программы
+$(OUTPUT): $(SRC_FILE)
+	$(CC) $(CFLAGS) -o $(OUTPUT) $(SRC_FILE)
+
+# Очистка собранных файлов
 clean:
-	rm -f src/*.o build/Quest_1
+	rm -rf $(BUILD_DIR)
+
+# Пересборка проекта
+rebuild: clean all
 
 # Пересборка
 rebuild: clean all
